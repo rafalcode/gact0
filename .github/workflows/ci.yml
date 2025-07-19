@@ -51,7 +51,7 @@ jobs:
     
     - name: Run program
       run: |
-        ./program_${{ matrix.compiler }}
+        ./program_${{ matrix.compiler }} 42
 
   cross-platform:
     strategy:

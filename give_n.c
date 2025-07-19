@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 	}
     int n=atoi(argv[1]);
 
-   printf("You gave in number %ii as an argument.\n", n);
+   printf("You gave in the number %i as an argument.\n", n);
 
    return 0;
 }
