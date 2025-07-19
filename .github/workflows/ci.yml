@@ -1,0 +1,88 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential
+    
+    - name: Compile C program
+      run: |
+        gcc -o program *.c -Wall -Wextra -std=c99
+    
+    - name: Run tests
+      run: |
+        ./program
+    
+    - name: Check for memory leaks (optional)
+      run: |
+        sudo apt-get install -y valgrind
+        valgrind --leak-check=full --error-exitcode=1 ./program
+
+  build-multiple-compilers:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential clang
+    
+    - name: Compile with ${{ matrix.compiler }}
+      run: |
+        ${{ matrix.compiler }} -o program_${{ matrix.compiler }} *.c -Wall -Wextra -std=c99
+    
+    - name: Run program
+      run: |
+        ./program_${{ matrix.compiler }}
+
+  cross-platform:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Setup build environment (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: microsoft/setup-msbuild@v1.1
+    
+    - name: Compile C program (Unix)
+      if: matrix.os != 'windows-latest'
+      run: |
+        gcc -o program *.c -Wall -Wextra -std=c99
+    
+    - name: Compile C program (Windows)
+      if: matrix.os == 'windows-latest'
+      run: |
+        gcc -o program.exe *.c -Wall -Wextra -std=c99
+      shell: cmd
+    
+    - name: Run program (Unix)
+      if: matrix.os != 'windows-latest'
+      run: ./program
+    
+    - name: Run program (Windows)
+      if: matrix.os == 'windows-latest'
+      run: .\program.exe
+      shell: cmd
